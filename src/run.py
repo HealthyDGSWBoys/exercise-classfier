@@ -5,7 +5,7 @@ from keras import models
 from keras.layers import Dense, Input, Flatten
 from keras.utils import to_categorical, plot_model
 from sklearn.model_selection import train_test_split
-from keras.optimizers.legacy.sgd import SGD
+from keras.optimizers import SGD
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -39,7 +39,7 @@ width = cap.get(cv.CAP_PROP_FRAME_WIDTH)
 height = cap.get(cv.CAP_PROP_FRAME_HEIGHT)
 frame = cap.get(cv.CAP_PROP_FPS)
 
-fourcc = cv.VideoWriter_fourcc(*'DIVX')
+fourcc = cv.VideoWriter_fourcc(*'H264')
 out = cv.VideoWriter('./test/output.mp4', fourcc, frame, (int(width), int(height)))
 
 while True:
@@ -68,7 +68,7 @@ while True:
             )
 
             cv.putText(frame, name, (50, 300), cv.FONT_HERSHEY_PLAIN, 10, (0, 0, 255), 10, cv.LINE_AA)
-            cv.imshow('webcam', frame)
+            # cv.imshow('webcam', frame)
             out.write(frame)
         key = cv.waitKey(1000 // 60)
         if key == 113:

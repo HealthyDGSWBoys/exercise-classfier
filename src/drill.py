@@ -5,8 +5,8 @@ from keras import models
 from keras.layers import Dense, Input, Flatten, Dropout
 from keras.utils import to_categorical, plot_model
 from sklearn.model_selection import train_test_split
-from keras.optimizers.legacy.sgd import SGD
-from keras.optimizers.legacy.adam import Adam
+from keras.optimizers import SGD
+from keras.optimizers import Adam
 import numpy as np
 import pandas as pd
 import processer as util
