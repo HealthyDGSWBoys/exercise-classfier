@@ -7,6 +7,9 @@ import tqdm
 import csv
 import sys
 import mediapipe as mp
+import io
+from PIL import Image, ImageFont, ImageDraw
+from matplotlib import pyplot as plt
 mp_pose = mp.solutions.pose
 
 
@@ -396,3 +399,101 @@ class BootstrapHelper(object):
         for pose_class_name in pose_class_names:
             n_images = len([n for n in os.listdir(os.path.join(images_folder, pose_class_name)) if not n.startswith('.')])
             print('  {}: {}'.format(pose_class_name, n_images))
+
+    
+class PoseClassificationVisualizer(object):
+    """모든 프레임에 대한 분류를 추적하고 렌더링합니다."""
+
+    def __init__(
+        self,
+        class_name: str,
+        plot_location_x: float=0.05,
+        plot_location_y: float=0.05,
+        plot_max_width: float=0.4,
+        plot_max_height: float=0.4,
+        plot_figsize: tuple=(9, 4),
+        plot_x_max=None,
+        plot_y_max=None,
+        counter_location_x: float=0.85,
+        counter_location_y: float=0.05,
+        counter_font_path: str='https://github.com/googlefonts/roboto/blob/main/src/hinted/Roboto-Regular.ttf?raw=true',
+        counter_font_color: str='red',
+        counter_font_size: float=0.15
+    ):
+        self._class_name = class_name
+        self._plot_location_x = plot_location_x
+        self._plot_location_y = plot_location_y
+        self._plot_max_width = plot_max_width
+        self._plot_max_height = plot_max_height
+        self._plot_figsize = plot_figsize
+        self._plot_x_max = plot_x_max
+        self._plot_y_max = plot_y_max
+        self._counter_location_x = counter_location_x
+        self._counter_location_y = counter_location_y
+        self._counter_font_path = counter_font_path
+        self._counter_font_color = counter_font_color
+        self._counter_font_size = counter_font_size
+
+        self._counter_font=None
+
+        self.leftSet = []
+        self.standSet = []
+        self.rightSet = []
+        self._pose_classification_filtered_history = []
+
+    def __call__(self, frame, dataset):
+        """주어진 프레임까지 포즈 분류 및 카운터를 렌더합니다."""
+        # classification 기록 확장
+        
+        # classification plot과 counter가 있는 프레임 출력
+        output_img = Image.fromarray(frame)
+
+        output_width = output_img.size[0]
+        output_height = output_img.size[1]
+
+        # plot 그리기
+        img = self._plot_classification_history(output_width, output_height, dataset)
+        img.thumbnail((int(output_width * self._plot_max_width),
+                       int(output_height * self._plot_max_height)),
+                      Image.ANTIALIAS)
+        output_img.paste(
+            img, (
+                int(output_width * self._plot_location_x),
+                int(output_height * self._plot_location_y)
+            )
+        )
+        return np.asarray(output_img)
+
+    def _plot_classification_history(self, output_width, output_height, dataset):
+        fig = plt.figure(figsize=self._plot_figsize)
+
+        self.leftSet.append(dataset[0])
+        self.standSet.append(dataset[1])
+        self.rightSet.append(dataset[2])
+        plt.plot(self.leftSet, linewidth=7, color='r')
+        plt.plot(self.standSet, linewidth=7, color='g')
+        plt.plot(self.rightSet, linewidth=7, color='b')
+
+        plt.grid(axis='y', alpha=0.75)
+        plt.xlabel('Frame')
+        plt.ylabel('Confidence')
+        plt.title('Classification history for `{}`'.format(self._class_name))
+        # plt.legend(loc='upper right')
+
+        if self._plot_y_max is not None:
+            plt.ylim(top=self._plot_y_max)
+        if self._plot_x_max is not None:
+            plt.xlim(right=self._plot_x_max)
+
+        # plot을 이미지로 변환
+        buf = io.BytesIO()
+        dpi = min(
+            output_width * self._plot_max_width / float(self._plot_figsize[0]),
+            output_height * self._plot_max_height / float(self._plot_figsize[1])
+        )
+        fig.savefig(buf, dpi=dpi)
+        buf.seek(0)
+        img = Image.open(buf)
+        plt.close()
+
+        return img

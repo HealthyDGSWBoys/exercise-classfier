@@ -32,6 +32,8 @@ processer = util.AngleProcesser()
 model = models.load_model('./dist/temp.h5')
 model.summary()
 cap = cv.VideoCapture('./test/test.mp4')
+visualizer = util.PoseClassificationVisualizer('up')
+
 
 width = cap.get(cv.CAP_PROP_FRAME_WIDTH)
 height = cap.get(cv.CAP_PROP_FRAME_HEIGHT)
@@ -58,17 +60,12 @@ while True:
             # print(processer(np.array(landmarks)))
             res = model.predict(np.array([processer(np.array(landmarks))]))[0].tolist()
             print(res)
-            name = ""
-            if res[1] > 0.5:
-                name = "stand"
-            elif res [0] > res [2] :
-                name= "left"
-            else:
-                name = "right"
-            # a = res.index(max(res))
-            # if a == 0: name = "left"
-            # elif a == 1: name = "stand"
-            # else: name = "right"
+            name = 'stand' if res[1] > 0.5 else 'left' if res[0] > res[2] else 'right'
+
+            frame = visualizer(
+                frame=frame,
+                dataset=res
+            )
 
             cv.putText(frame, name, (50, 300), cv.FONT_HERSHEY_PLAIN, 10, (0, 0, 255), 10, cv.LINE_AA)
             cv.imshow('webcam', frame)
