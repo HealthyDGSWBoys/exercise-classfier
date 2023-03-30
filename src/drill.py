@@ -1,24 +1,22 @@
 import tensorflow as tf
-from keras.datasets.mnist import load_data
 from keras.models import Sequential
-from keras import models
 from keras.layers import Dense, Input, Flatten, Dropout
 from keras.utils import to_categorical, plot_model
-from sklearn.model_selection import train_test_split
-from keras.optimizers import SGD
-from keras.optimizers import Adam
+from sklearn.model_selection import train_test_split 
+from keras.optimizers import RMSprop
+from keras.losses import SparseCategoricalCrossentropy
 import numpy as np
-import pandas as pd
 import processer as util
 from sklearn.model_selection import train_test_split
+from keras.utils import to_categorical
 
   
 model = Sequential([
             Input(shape=(37)),
-            Dense(18, activation='relu'),
-            Dropout(0.05),
-            Dense(9, activation='relu'),
-            Dense(3, activation="sigmoid")
+            Dense(18, activation=tf.nn.relu),
+            Dropout(0.1),
+            Dense(9, activation=tf.nn.relu),
+            Dense(3, activation=tf.nn.softmax)
         ])
 
 x_data = []
@@ -50,18 +48,19 @@ for load in right_data:
 x_data = np.array(x_data)
 y_data = np.array(y_data)
 
-x_train_data, x_val_data, y_train_data, y_val_data = train_test_split(x_data, y_data, test_size=0.1, random_state=1, shuffle=False)
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.1, random_state=1, shuffle=False)
 
-model.compile(optimizer=SGD(learning_rate=0.01),
-          loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+
+model.compile(optimizer=RMSprop(),
+          loss=SparseCategoricalCrossentropy(from_logits=True),
           metrics=['accuracy'])
 
 model.fit(
-    x=x_train_data,
-    y=y_train_data,
-    validation_data=(x_val_data, y_val_data),
-    epochs=4096, 
-    batch_size=64, 
+    x=x_train,
+    y=y_train,
+    validation_data=(x_test, y_test),
+    epochs=256, 
+    batch_size=32, 
     shuffle=True
 )
 

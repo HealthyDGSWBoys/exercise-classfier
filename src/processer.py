@@ -497,3 +497,17 @@ class PoseClassificationVisualizer(object):
         plt.close()
 
         return img
+    
+def getPointName(xyz):
+    res = []
+    if xyz:
+        for landmark in mp_pose.PoseLandmark:
+            res.append(str(landmark).split('.')[1])
+    else: 
+        for landmark in mp_pose.PoseLandmark:
+            string = str(landmark).split('.')[1]
+            res.append(string + "_x")
+            res.append(string + "_y")
+            res.append(string + "_z")
+            
+    return res

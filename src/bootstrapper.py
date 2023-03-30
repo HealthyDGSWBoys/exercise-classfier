@@ -7,6 +7,7 @@ import csv
 import tqdm
 import numpy as np
 import glob
+import processer as util
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -59,13 +60,7 @@ for video_file in file_list:
     file = open(os.path.join(workspace_dir, "dataset", video_file) + ".csv", 'w')
     writer = csv.writer(file)
     
-    name = []
-
-    for landmark in mp_pose.PoseLandmark:
-        landmark_name = str(landmark).split('.')[1]
-        name.append(landmark_name + "_x")
-        name.append(landmark_name + "_y")
-        name.append(landmark_name + "_z")
+    name = util.getPointName()
     writer.writerow(name)
     with tqdm.tqdm(total=len(IMAGE_FILES), position=0, leave=False) as pbar:
         with mp_pose.Pose(
