@@ -67,7 +67,7 @@ while True:
                 dataset=res
             )
 
-            cv.putText(frame, name, (50, 300), cv.FONT_HERSHEY_PLAIN, 10, (0, 0, 255), 10, cv.LINE_AA)
+            cv.putText(frame, ' '.join(map(lambda x: f'{x:.3f}', res)), (50, 300), cv.FONT_HERSHEY_PLAIN, 7, (0, 0, 255), 10, cv.LINE_AA)
             # cv.imshow('webcam', frame)
             out.write(frame)
         key = cv.waitKey(1000 // 60)
