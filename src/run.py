@@ -12,6 +12,7 @@ import math
 import mediapipe as mp
 import processer as util
 import cv2 as cv
+import tqdm
 
 mp_pose = mp.solutions.pose
 
@@ -19,16 +20,15 @@ mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(
             model_complexity=1,
             static_image_mode=True,
-            enable_segmentation=True,
             min_detection_confidence=0.5
         )
-# processer = util.MultiProcesser(
-#     [
-#         util.AngleProcesser(),
-#         util.DistanceProcesser2(),
-#     ]
-# )
-processer = util.AngleProcesser()
+processer = util.MultiProcesser(
+    [
+        util.AngleProcesser(),
+        util.DistanceProcesser2(),
+    ]
+)
+# processer = util.AngleProcesser()
 model = models.load_model('./dist/temp.h5')
 model.summary()
 cap = cv.VideoCapture('./test/test.mp4')
@@ -39,7 +39,7 @@ width = cap.get(cv.CAP_PROP_FRAME_WIDTH)
 height = cap.get(cv.CAP_PROP_FRAME_HEIGHT)
 frame = cap.get(cv.CAP_PROP_FPS)
 
-fourcc = cv.VideoWriter_fourcc(*'H264')
+fourcc = cv.VideoWriter_fourcc(*'mp4v')
 out = cv.VideoWriter('./test/output.mp4', fourcc, frame, (int(width), int(height)))
 
 while True:
@@ -56,18 +56,23 @@ while True:
                     landmark.y * 100,
                     landmark.z * 100
                 ])
-            # print(landmarks)
-            # print(processer(np.array(landmarks)))
             res = model.predict(np.array([processer(np.array(landmarks))]))[0].tolist()
+
+            max_val = res.index(max(res))
+            print(max_val)
             print(res)
-            name = 'stand' if res[1] > 0.5 else 'left' if res[0] > res[2] else 'right'
+            if max_val == 0:
+                name = "left"
+            elif max_val == 1:
+                name = "stand"
+            else:
+                name = "right"
 
             frame = visualizer(
                 frame=frame,
                 dataset=res
             )
-
-            cv.putText(frame, ' '.join(map(lambda x: f'{x:.3f}', res)), (50, 300), cv.FONT_HERSHEY_PLAIN, 7, (0, 0, 255), 10, cv.LINE_AA)
+            cv.putText(frame, name, (50, 300), cv.FONT_HERSHEY_PLAIN, 7, (0, 0, 255), 10, cv.LINE_AA)
             # cv.imshow('webcam', frame)
             out.write(frame)
         key = cv.waitKey(1000 // 60)

@@ -467,9 +467,9 @@ class PoseClassificationVisualizer(object):
     def _plot_classification_history(self, output_width, output_height, dataset):
         fig = plt.figure(figsize=self._plot_figsize)
 
-        self.leftSet.append(dataset[0])
+        self.leftSet.append(dataset[2])
         self.standSet.append(dataset[1])
-        self.rightSet.append(dataset[2])
+        self.rightSet.append(dataset[0])
         plt.plot(self.leftSet, linewidth=7, color='r')
         plt.plot(self.standSet, linewidth=7, color='g')
         plt.plot(self.rightSet, linewidth=7, color='b')

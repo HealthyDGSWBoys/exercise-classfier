@@ -14,8 +14,9 @@ from sklearn.model_selection import train_test_split
 
   
 model = Sequential([
-            Input(shape=(14)),
+            Input(shape=(37)),
             Dense(18, activation='relu'),
+            Dropout(0.05),
             Dense(9, activation='relu'),
             Dense(3, activation="sigmoid")
         ])
@@ -24,13 +25,13 @@ x_data = []
 y_data = []
 
 loader = util.CSVLoader()
-# processer = util.MultiProcesser(
-#     [
-#         util.AngleProcesser(),
-#         util.DistanceProcesser2(),
-#     ]
-# )
-processer = util.AngleProcesser()
+processer = util.MultiProcesser(
+    [
+        util.AngleProcesser(),
+        util.DistanceProcesser2(),
+    ]
+)
+# processer = util.AngleProcesser()
 
 stand_data = loader('./data/stand/dataset.csv')
 left_data = loader('./data/left/dataset.csv')
@@ -59,8 +60,8 @@ model.fit(
     x=x_train_data,
     y=y_train_data,
     validation_data=(x_val_data, y_val_data),
-    epochs=32, 
-    batch_size=32, 
+    epochs=4096, 
+    batch_size=64, 
     shuffle=True
 )
 
